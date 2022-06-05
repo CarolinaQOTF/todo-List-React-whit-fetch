@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const Tasklist = () => {
 	const [task, setTask] = useState("");
@@ -7,7 +7,7 @@ const Tasklist = () => {
 	const handleTask = (e) => {
 		if (e.key === "Enter") {
 			if (task !== "") {
-				setListOfTasks([...listOfTasks, task]);
+				CreateTask();
 				setTask(" ");
 			} else {
 				alert("Rellena el campo vacio");
@@ -18,17 +18,61 @@ const Tasklist = () => {
 	const DeleteTarea = (nombre) => {
 		confirm("¿ Estas seguro que deseas eliminar esta tarea ?");
 		const auxTarea = listOfTasks.filter((item) => {
-			if (nombre !== item) return item;
+			if (nombre !== item.label) return item;
 		});
 
 		setListOfTasks(auxTarea);
+		UpDateTask(auxTarea);
+	};
+	const UpDateTask = (listTasks) => {
+		const requestOptions = {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(listTasks),
+		};
+		fetch(
+			"https://assets.breatheco.de/apis/fake/todos/user/CarolinaQOTF",
+			requestOptions
+		)
+			.then((resp) => resp.json())
+			.then((data) => console.log(data));
+	};
+
+	const CreateUser = () => {
+		const requestOptions = {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({}),
+		};
+		fetch(
+			"https://assets.breatheco.de/apis/fake/todos/user/CarolinaQOTF",
+			requestOptions
+		)
+			.then((resp) => resp.json())
+			.then((data) => console.log(data));
+	};
+
+	useEffect(() => {
+		fetch("https://assets.breatheco.de/apis/fake/todos/user/CarolinaQOTF")
+			.then((resp) => resp.json())
+			.then((data) => setListOfTasks(data))
+			.catch((error) => {
+				console.log(error);
+				CreateUser();
+			});
+	}, []);
+
+	const CreateTask = () => {
+		const newTodoList = [...listOfTasks, { label: task, done: false }];
+		setListOfTasks(newTodoList);
+		UpDateTask(newTodoList);
 	};
 
 	return (
 		<>
 			<div className="container justify-content-center text-center mt-5">
 				<h1>
-					TodoList whit React <i class="fab fa-react fa-lg"></i>
+					TodoList whit React <i className="fab fa-react fa-lg"></i>
 				</h1>
 				<input
 					value={task}
@@ -42,13 +86,13 @@ const Tasklist = () => {
 				/>
 				<div id="listContainer" className="container my-2 py-4">
 					{listOfTasks.map((item, index) => (
-						<div className="border-bottom mt-2">
-							<h3 key={index}>
-								{item}{" "}
+						<div className="border-bottom mt-2" key={index}>
+							<h3>
+								{item.label}{" "}
 								<button
 									type="button"
 									className="btn btn-outline-primary btn-sm ms-3 pe-3"
-									onClick={() => DeleteTarea(item)}>
+									onClick={() => DeleteTarea(item.label)}>
 									Delete
 								</button>
 							</h3>
